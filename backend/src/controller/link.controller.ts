@@ -1,32 +1,12 @@
 import type { Request, Response } from "express";
 import { createLink, getLink, deleteLink } from "../services/link.service";
-import { ValidationError } from "../errors/app.error";
-
+import { createLinkSchema } from "../schema/link.schema";
 const baseUrl = () =>
   process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
 
-// POST /api/links
-// body: { url: string, alias?: string, expiresAt?: ISO date string }
 export async function createLinkHandler(req: Request, res: Response) {
-  const { url, alias, expiresAt } = req.body ?? {};
-
-  if (typeof url !== "string") {
-    throw new ValidationError("url is required and must be a string");
-  }
-  if (alias !== undefined && typeof alias !== "string") {
-    throw new ValidationError("alias must be a string");
-  }
-
-  let expires: Date | undefined;
-  if (expiresAt !== undefined) {
-    expires = new Date(expiresAt);
-    if (Number.isNaN(expires.getTime())) {
-      throw new ValidationError("expiresAt must be a valid date");
-    }
-  }
-
-  const link = await createLink({ url, alias, expiresAt: expires });
-
+  const { url, alias, expiresAt } = createLinkSchema.parse(req.body);
+  const link = await createLink({ url, alias, expiresAt });
   res.status(201).json({ ...link, shortUrl: `${baseUrl()}/${link.code}` });
 }
 

@@ -1,5 +1,4 @@
 import { prisma } from "../db/prisma";
-// import { generateCode } from "../utils/code-generator";
 import { generateCode } from "../utils/code-generator";
 import { validateUrl, validateAlias } from "../utils/url-validator";
 import {
@@ -8,7 +7,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../errors/app.error";
-
+import { redirectHandler } from "../controller/redirect.controller";
 const MAX_CODE_RETRIES = 5;
 
 export interface CreateLinkInput {
@@ -71,7 +70,6 @@ export async function createLink({ url, alias, expiresAt }: CreateLinkInput) {
       throw err;
     }
   }
-
   // Random code: retry on collision. The unique constraint in the DB is the
   // source of truth, so we never "check then insert" (that has a race condition).
   for (let attempt = 0; attempt < MAX_CODE_RETRIES; attempt++) {
@@ -85,7 +83,6 @@ export async function createLink({ url, alias, expiresAt }: CreateLinkInput) {
       // collision: loop and try a new code
     }
   }
-
   throw new Error("Could not generate a unique code, please try again");
 }
 
@@ -94,7 +91,12 @@ export async function getLink(code: string) {
   if (!link) throw new NotFoundError("Link not found");
   return toDto(link);
 }
-
+export async function incrementClickCount(code: string): Promise<void> {
+  await prisma.link.update({
+    where: { code },
+    data: { clickCount: { increment: 1 } },
+  });
+}
 // Used by the redirect route: returns the destination URL and counts the click.
 export async function resolveLink(code: string): Promise<string> {
   const link = await prisma.link.findUnique({ where: { code } });

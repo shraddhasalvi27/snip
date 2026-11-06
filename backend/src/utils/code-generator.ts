@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 
 const ALPHABET =
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // base62
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // base62 10 no+ 26 upper+26 lower
 
 // 62^7 is about 3.5 trillion possible codes
 export function generateCode(length = 7): string {
