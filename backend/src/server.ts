@@ -4,6 +4,7 @@ import { prisma } from "./db/prisma.js";
 import { Request,Response,NextFunction } from "express";
 import LinkRoutes from "./routs/link.routes";
 import { redirectHandler } from "./controller/redirect.controller.js";
+import cors from "cors";
 // ---------- Config ----------
 const PORT = Number(process.env.PORT || 3000);
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -17,6 +18,13 @@ if (!process.env.DATABASE_URL) {
 export const app = express();
 app.use(express.json({ limit: "10kb" }));
 
+app.use(
+  cors({
+    origin: "http://localhost:3000", // your Next.js frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", uptime: process.uptime() });
