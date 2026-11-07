@@ -5,8 +5,16 @@ import { createLink } from "../axios";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/handle-error";
 
-const inputClass =
-  "min-w-0 w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-100 dark:focus:ring-zinc-100/20";
+const fieldClass =
+  "w-full min-w-0 rounded-2xl border border-violet-200/70 bg-violet-50/60 px-4 py-3 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-violet-400 focus:bg-white focus:ring-4 focus:ring-violet-200/60";
+
+const labelClass = "mb-1.5 block text-sm font-medium text-zinc-700";
+
+const perks = [
+  { title: "Custom names", text: "Pick a short name people can remember.", tint: "bg-emerald-100" },
+  { title: "Expiry dates", text: "Links stop working on the day you choose.", tint: "bg-amber-100" },
+  { title: "Free to use", text: "No account needed to create a link.", tint: "bg-sky-100" },
+];
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -55,38 +63,52 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 px-4 font-sans dark:bg-black">
-      <main className="w-full max-w-xl">
-        <div className="mb-8">
-          <Logo />
-        </div>
+    <div className="flex min-h-screen flex-1 flex-col bg-[#f6f3ff] font-sans text-zinc-900">
+      {/* header: logo top-left */}
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
+        <Logo />
+        <span className="rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-600 shadow-sm shadow-violet-200/60">
+          Free, no sign-up
+        </span>
+      </header>
 
-        <h1 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-5 pb-16 pt-12 sm:px-8 sm:pt-20">
+        <h1 className="max-w-2xl text-balance text-center text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-zinc-900 sm:text-6xl">
           Make a long link short
         </h1>
-        <p className="mb-6 text-zinc-600 dark:text-zinc-400">
-          Paste your link below and get a short one you can share.
+        <p className="mt-5 max-w-md text-pretty text-center text-base leading-relaxed text-zinc-600 sm:text-lg">
+          Paste a link, name it, set an expiry if you want, and share it anywhere.
         </p>
 
-        <div className="flex flex-col gap-3">
-          <input
-            type="text"
-            inputMode="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreateShortLink()}
-            placeholder="https://example.com/very/long/link"
-            aria-label="Link to shorten"
-            className={inputClass}
-          />
-
+        {/* form */}
+        <div className="mt-10 w-full max-w-2xl rounded-3xl bg-white p-4 shadow-xl shadow-violet-200/50 sm:p-6">
+          <label htmlFor="url" className="sr-only">
+            Link to shorten
+          </label>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="flex-1">
-              <label
-                htmlFor="alias"
-                className="mb-1 block text-sm text-zinc-600 dark:text-zinc-400"
-              >
-                Custom alias (optional)
+            <input
+              id="url"
+              type="text"
+              inputMode="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateShortLink()}
+              placeholder="https://example.com/very/long/link"
+              className={`${fieldClass} py-3.5 text-base`}
+            />
+            <button
+              onClick={handleCreateShortLink}
+              disabled={loading}
+              className="shrink-0 rounded-2xl bg-violet-300 px-7 py-3.5 font-semibold text-violet-950 transition hover:bg-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Shortening…" : "Shorten"}
+            </button>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="alias" className={labelClass}>
+                Custom name <span className="text-zinc-400">(optional)</span>
               </label>
               <input
                 id="alias"
@@ -98,15 +120,12 @@ export default function Home() {
                 onKeyDown={(e) => e.key === "Enter" && handleCreateShortLink()}
                 placeholder="my-link"
                 maxLength={30}
-                className={inputClass}
+                className={fieldClass}
               />
             </div>
-            <div className="flex-1">
-              <label
-                htmlFor="expires"
-                className="mb-1 block text-sm text-zinc-600 dark:text-zinc-400"
-              >
-                Expires on (optional)
+            <div>
+              <label htmlFor="expires" className={labelClass}>
+                Expires on <span className="text-zinc-400">(optional)</span>
               </label>
               <input
                 id="expires"
@@ -114,44 +133,45 @@ export default function Home() {
                 value={date}
                 min={today}
                 onChange={(e) => setDate(e.target.value)}
-                className={inputClass}
+                className={`${fieldClass} [color-scheme:light]`}
               />
             </div>
           </div>
 
-          <button
-            onClick={handleCreateShortLink}
-            disabled={loading}
-            className="rounded-xl bg-zinc-900 px-6 py-3 font-medium text-white transition hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-          >
-            {loading ? "Shortening…" : "Shorten"}
-          </button>
+          {error && (
+            <p role="alert" className="mt-4 rounded-xl bg-rose-100 px-4 py-2.5 text-sm text-rose-800">
+              {error}
+            </p>
+          )}
+
+          {shortLink && (
+            <div
+              aria-live="polite"
+              className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-emerald-100 p-4"
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-emerald-800">Your short link is ready</p>
+                <a
+                  href={shortLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block truncate text-lg font-semibold text-emerald-950 underline-offset-4 hover:underline"
+                >
+                  {shortLink}
+                </a>
+              </div>
+              <button
+                onClick={handleCopy}
+                className="shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-50"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+          )}
         </div>
 
-        {error && (
-          <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        )}
-
-        {shortLink && (
-          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <a
-              href={shortLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="truncate font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-            >
-              {shortLink}
-            </a>
-            <button
-              onClick={handleCopy}
-              className="shrink-0 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
-            >
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-        )}
+        {/* perks */}
+       
       </main>
     </div>
   );
